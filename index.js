@@ -32,16 +32,18 @@ function highlightQuery (query, errors) {
 }
 
 module.exports = function (params) {
-  require('isomorphic-fetch')
   if (!params.url) throw new Error('Missing url parameter')
 
-  var headers = new Headers(params.headers || {})
-  headers.append('Content-Type', 'application/json')
+  var headers = params.headers || {};
+  
+  if(headers['Content-Type'] === undefined ||  headers['Content-Type'] === null) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   return {
     query: function (query, variables, onResponse) {
 
-      var req = new Request(params.url, {
+      return fetch(params.url, {
         method: 'POST',
         body: JSON.stringify({
           query: query,
@@ -50,8 +52,6 @@ module.exports = function (params) {
         headers: headers,
         credentials: params.credentials
       })
-
-      return fetch(req)
       .then(function (res) {
         onResponse && onResponse(req, res)
 
